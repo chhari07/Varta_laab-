@@ -10,7 +10,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     setUser(auth.currentUser);
-    fetch("http://localhost:5000/api/questions")
+    fetch("https://varta-laab.onrender.com/api/questions")
       .then((res) => res.json())
       .then((data) => setQuestions(data))
       .catch((error) => console.error("Error fetching questions:", error));
