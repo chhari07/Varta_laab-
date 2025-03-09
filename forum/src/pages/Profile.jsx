@@ -44,7 +44,7 @@ const Profile = () => {
         const formData = new FormData();
         formData.append("file", selectedFile);
 
-        const uploadResponse = await fetch("http://localhost:5000/api/upload", {
+        const uploadResponse = await fetch("https://varta-laab.onrender.com/api/upload", {
           method: "POST",
           body: formData,
         });
@@ -53,7 +53,7 @@ const Profile = () => {
         imageUrl = uploadData.imageUrl; // Use uploaded image URL
       }
 
-      const response = await fetch(`http://localhost:5000/api/users/${auth.currentUser.email}`, {
+      const response = await fetch(`https://varta-laab.onrender.com/api/users/${auth.currentUser.email}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ displayName, photoURL: imageUrl }),
