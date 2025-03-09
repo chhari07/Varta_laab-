@@ -20,7 +20,7 @@ const Q_A = () => {
     if (newQuestion.trim() && userName.trim()) {
       const newEntry = { question: newQuestion, user: userName };
       try {
-        const res = await fetch("http://localhost:5000/api/questions", {
+        const res = await fetch("https://varta-laab.onrender.com/api/questions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEntry),
