@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: NODE_ENV
+        value: "production"
