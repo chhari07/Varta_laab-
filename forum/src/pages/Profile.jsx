@@ -15,7 +15,7 @@ const Profile = () => {
     if (!auth.currentUser) return;
     setUser(auth.currentUser);
 
-    fetch(`http://localhost:5000/api/users/${auth.currentUser.email}`)
+    fetch(`https://varta-laab.onrender.com/api/users/${auth.currentUser.email}`)
       .then((res) => res.json())
       .then((data) => {
         setDisplayName(data.displayName);
