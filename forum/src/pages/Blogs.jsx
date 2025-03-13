@@ -7,8 +7,8 @@ const Blog = () => {
   const [newComment, setNewComment] = useState("");
   const [newBlog, setNewBlog] = useState({ title: "", content: "", image: null });
 
-  const API_URL = "http://localhost:5000/api/blogs";
-  const IMAGE_BASE_URL = "http://localhost:5000/uploads/";
+  const API_URL = "https://varta-laab.onrender.com/api/blogs";
+  const IMAGE_BASE_URL = "https://varta-laab.onrender.com/uploads/";
   const defaultImage = "/default-image.jpg";
 
   useEffect(() => {
@@ -156,7 +156,13 @@ const Blog = () => {
                 className="mb-2"
                 onChange={(e) => setNewBlog({ ...newBlog, image: e.target.files[0] })}
               />
-              <button type="submit" className="bg-blue-500 text-white p-2 rounded">Submit</button>
+             <button 
+  type="submit" 
+  className={`p-2 rounded ${newBlog.title && newBlog.content ? "bg-blue-500 text-white" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`} 
+  disabled={!newBlog.title || !newBlog.content}
+>
+  Submit
+</button>
             </form>
             <button className="text-gray-500 mt-3" onClick={() => setIsAddingBlog(false)}>Cancel</button>
           </div>

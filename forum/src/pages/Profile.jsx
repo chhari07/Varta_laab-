@@ -1,59 +1,78 @@
 import React, { useState, useEffect } from "react";
-import { auth } from "../Firebase/Firebase"; // Firebase auth instance
+import { auth } from "../Firebase/Firebase";
 import { Link } from "react-router-dom";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState("");
   const [photoURL, setPhotoURL] = useState("");
+  const [previewURL, setPreviewURL] = useState(""); // For previewing uploaded image
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [activeTab, setActiveTab] = useState("view");
   const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
-    setUser(auth.currentUser);
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        fetchUserProfile(currentUser.email);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
-    fetch(`http://localhost:5000/api/users/${auth.currentUser.email}`)
-      .then((res) => res.json())
-      .then((data) => {
+  const fetchUserProfile = async (email) => {
+    try {
+      const response = await fetch(`https://varta-laab.onrender.com/api/users/${email}`);
+      if (response.ok) {
+        const data = await response.json();
         setDisplayName(data.displayName);
         setPhotoURL(data.photoURL);
-      })
-      .catch((error) => console.error("Error fetching profile:", error));
-  }, []);
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   // Handle Image File Selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const fileURL = URL.createObjectURL(file);
-      setPhotoURL(fileURL); // Preview the image
+      setPreviewURL(fileURL); // Temporary preview
       setSelectedFile(file);
     }
   };
 
+  // Cleanup URL to free memory
+  useEffect(() => {
+    return () => {
+      if (previewURL) URL.revokeObjectURL(previewURL);
+    };
+  }, [previewURL]);
+
   const handleUpdateProfile = async () => {
     setLoading(true);
     try {
-      let imageUrl = photoURL; // Default to existing URL
+      let imageUrl = photoURL; // Default to existing photo
 
-      // If a new file is selected, upload it to the server
+      // Upload new image if selected
       if (selectedFile) {
         const formData = new FormData();
         formData.append("file", selectedFile);
 
-        const uploadResponse = await fetch("http://localhost:5000/api/upload", {
+        const uploadResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/upload`, {
           method: "POST",
           body: formData,
         });
 
         const uploadData = await uploadResponse.json();
-        imageUrl = uploadData.imageUrl; // Use uploaded image URL
+        imageUrl = uploadData.imageUrl; // Get uploaded image URL
       }
 
-      const response = await fetch(`http://localhost:5000/api/users/${auth.currentUser.email}`, {
+      // Update user profile in the database
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/${user.email}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ displayName, photoURL: imageUrl }),
@@ -61,6 +80,8 @@ const Profile = () => {
 
       if (response.ok) {
         setSuccessMessage("Profile updated successfully!");
+        setPhotoURL(imageUrl);
+        setPreviewURL(""); // Clear preview after update
       } else {
         setSuccessMessage("Failed to update profile.");
       }
@@ -74,10 +95,10 @@ const Profile = () => {
 
   return (
     <div className="p-2"
-    style={{
-      backgroundImage:
-        "url('https://nighteye.app/wp-content/uploads/2022/05/dark-ui-design-best-practices-1.jpg.webp')",
-    }}
+      style={{
+        backgroundImage:
+          "url('https://nighteye.app/wp-content/uploads/2022/05/dark-ui-design-best-practices-1.jpg.webp')",
+      }}
     >
       <div className="max-w-md mx-auto p-2 mt-4 bg-white/80 rounded-lg shadow-md">
         <h1 className="text-2xl font-semibold text-center text-gray-700 mb-6">Profile</h1>
@@ -113,14 +134,20 @@ const Profile = () => {
 
             {activeTab === "view" ? (
               <div className="flex flex-col items-center">
-                <img className="w-24 h-24 rounded-full mb-4" src={photoURL || "https://via.placeholder.com/150"} alt="Profile" />
+                <img
+                  className="w-24 h-24 rounded-full mb-4"
+                  src={photoURL || "https://via.placeholder.com/150"}
+                  alt="Profile"
+                />
                 <h2 className="text-xl font-semibold text-gray-800">{displayName || "No Name"}</h2>
               </div>
             ) : (
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="displayName" className="block text-gray-700 font-medium">Display Name</label>
+                    <label htmlFor="displayName" className="block text-gray-700 font-medium">
+                      Display Name
+                    </label>
                     <input
                       id="displayName"
                       type="text"
@@ -132,7 +159,9 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="photoUpload" className="block text-gray-700 font-medium">Upload Profile Photo</label>
+                    <label htmlFor="photoUpload" className="block text-gray-700 font-medium">
+                      Upload Profile Photo
+                    </label>
                     <input
                       id="photoUpload"
                       type="file"
@@ -142,7 +171,9 @@ const Profile = () => {
                     />
                   </div>
 
-                  {photoURL && <img src={photoURL} alt="Profile Preview" className="w-24 h-24 rounded-full mx-auto mt-4" />}
+                  {previewURL && (
+                    <img src={previewURL} alt="Profile Preview" className="w-24 h-24 rounded-full mx-auto mt-4" />
+                  )}
 
                   <button
                     onClick={handleUpdateProfile}
@@ -153,7 +184,9 @@ const Profile = () => {
                   </button>
                 </div>
 
-                {successMessage && <p className="mt-4 text-center text-sm font-medium text-green-600">{successMessage}</p>}
+                {successMessage && (
+                  <p className="mt-4 text-center text-sm font-medium text-green-600">{successMessage}</p>
+                )}
               </div>
             )}
           </div>
