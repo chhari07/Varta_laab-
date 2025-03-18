@@ -65,7 +65,7 @@ const Navbar = () => {
               {user && (
                 <>
                   <li>
-                    <NavLink to="/qa" className="px-3 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg">
+                    <NavLink to="/questions" className="px-3 py-2 text-sm font-medium hover:bg-gray-100 rounded-lg">
                       Q&A
                     </NavLink>
                   </li>
@@ -125,7 +125,7 @@ const Navbar = () => {
             ))}
             {user && (
               <>
-                <NavLink to="/qa" className="block w-full text-center py-2 text-sm font-medium text-gray-900 hover:bg-gray-100" onClick={() => setIsOpen(false)}>
+                <NavLink to="/questions" className="block w-full text-center py-2 text-sm font-medium text-gray-900 hover:bg-gray-100" onClick={() => setIsOpen(false)}>
                   Q&A
                 </NavLink>
                 <NavLink to="/blogs" className="block w-full text-center py-2 text-sm font-medium text-gray-900 hover:bg-gray-100" onClick={() => setIsOpen(false)}>
